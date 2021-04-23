@@ -24,7 +24,17 @@ const promptUser = () => {
                 promptUser();
             })
         } else if (option.options === 'View all roles') {
-            console.log('roles are here')
+            const sql = `SELECT * FROM roles`;
+            db.query(sql, (err, rows) => {
+                if (err) {
+                    console.log('error');
+                    return;
+                }
+                console.log('');
+                console.log('');
+                console.table(rows);
+                promptUser();
+            })
         }
     });
 };
