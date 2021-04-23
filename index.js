@@ -35,6 +35,18 @@ const promptUser = () => {
                 console.table(rows);
                 promptUser();
             })
+        } else if (option.options === 'View all employees') {
+            const sql = `SELECT * FROM employees`;
+            db.query(sql, (err, rows) => {
+                if (err) {
+                    console.log('error');
+                    return;
+                }
+                console.log('');
+                console.log('');
+                console.table(rows);
+                promptUser();
+            })
         }
     });
 };
