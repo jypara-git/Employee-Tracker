@@ -31,7 +31,7 @@ const promptUser = () => {
                     return;
                 }
                 console.log('');
-                console.log('');
+            console.log('');
                 console.table(rows);
                 promptUser();
             })
@@ -55,12 +55,45 @@ const promptUser = () => {
                 db.query(sql, params, (err, _) => {
                     if (err) {
                         console.log('Error');
+                        return;
                     }
                     console.log(params + ' added to departments');
                     promptUser();
                 })
             })
-        } 
+        } else if (option.options === 'Add a role') {
+            const sql = `SELECT name FROM departments`;
+            db.query(sql, (err, rows) => {
+                if (err) {
+                    console.log('error');
+                    return;
+                }
+                const departmentList = rows.map(textRow => textRow.name);
+                promptRole(departmentList)
+                .then((roleResponse) => {
+                    const sql = `SELECT id FROM departments WHERE name=?`;
+                    const params = roleResponse.department_name;
+                    db.query(sql,params,(err,rows)=>{
+                        if (err) {
+                            console.log(err);
+                            return;
+                        }
+                        const dep_id = rows[0].id;
+                        const sql = `INSERT INTO roles (title, salary, department_id) VALUES (?, ?, ?)`;
+                        const params = [roleResponse.title, roleResponse.salary, dep_id];
+                        console.log(params);
+                        db.query(sql, params, (err, _) => {
+                            if (err) {
+                                console.log(err);
+                                return;
+                            }
+                            console.log(roleResponse.title + ' added to roles!');
+                            promptUser();
+                        })
+                    })
+                })
+            })
+        }
     });
 };
 const promptDepartment = () => {
@@ -80,4 +113,38 @@ const promptDepartment = () => {
     }
     ])
 };
+const promptRole = (departmentList) => {
+    return inquirer.prompt([
+        {
+            type: 'input',
+            name: 'title',
+            message: 'What is the title name?',
+            validate: (nameInput)=> {
+                if (nameInput) {
+                    return true;
+                }
+                console.log('Please enter the title name!');
+                return false;
+            }
+        },
+        {
+            type: 'input',
+            name: 'salary',
+            message: 'Enter the salary for the role',
+            validate: (nameInput) => {
+                if (nameInput) {
+                    return true;
+                }
+                console.log('Please enter the salary!');
+                return false;
+            }
+        },
+        {
+            type: 'list',
+            name: 'department_name',
+            message: 'What is the department?',
+            choices: departmentList
+        }
+    ])
+}
 promptUser();
