@@ -47,7 +47,37 @@ const promptUser = () => {
                 console.table(rows);
                 promptUser();
             })
-        }
+        } else if (option.options === 'Add a department') {
+            promptDepartment()
+            .then((depResponse) => {
+                const sql = `INSERT INTO departments (name) VALUES (?)`;
+                const params = depResponse.department_name;
+                db.query(sql, params, (err, _) => {
+                    if (err) {
+                        console.log('Error');
+                    }
+                    console.log(params + ' added to departments');
+                    promptUser();
+                })
+            })
+        } 
     });
+};
+const promptDepartment = () => {
+    return inquirer.prompt ([
+    {
+        type: 'input',
+        name: 'department_name',
+        message: 'What is the department name?',
+        validate: nameInput => {
+            if (nameInput) {
+                return true;
+            } else {
+                console.log('Please enter the department name!');
+                return false;
+            }
+        }
+    }
+    ])
 };
 promptUser();
