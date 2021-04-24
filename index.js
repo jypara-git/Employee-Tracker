@@ -24,7 +24,7 @@ const promptUser = () => {
                 promptUser();
             })
         } else if (option.options === 'View all roles') {
-            const sql = `SELECT * FROM roles`;
+            const sql = ` SELECT roles.id, roles.title, roles.salary, departments.name AS department FROM roles LEFT JOIN departments ON roles.department_id = departments.id;`;
             db.query(sql, (err, rows) => {
                 if (err) {
                     console.log('error');
@@ -36,10 +36,10 @@ const promptUser = () => {
                 promptUser();
             })
         } else if (option.options === 'View all employees') {
-            const sql = `SELECT * FROM employees`;
+            const sql = `SELECT empl1.id, empl1.first_name, empl1.last_name, roles.title, roles.salary, departments.name AS department, (SELECT CONCAT(first_name, ' ', last_name) FROM employees WHERE id=empl1.manager_id) AS manager FROM employees AS empl1 LEFT JOIN roles ON empl1.role_id = roles.id LEFT JOIN departments ON roles.department_id = departments.id`;
             db.query(sql, (err, rows) => {
                 if (err) {
-                    console.log('error');
+                    console.log(err);
                     return;
                 }
                 console.log('');
