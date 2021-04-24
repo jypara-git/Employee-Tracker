@@ -7,7 +7,7 @@ const promptUser = () => {
             type: 'list',
             name: 'options',
             message: 'What would you like to do?',
-            choices: ['View all departments', 'View all roles', 'View all employees', 'Add a department', 'Add a role', 'Add an employee', 'Update an employee role'],
+            choices: ['View all departments', 'View all roles', 'View all employees', 'Add a department', 'Add a role', 'Add an employee', 'Update an employee role']
         }
     ])
     .then((option) => {
@@ -57,7 +57,7 @@ const promptUser = () => {
                         console.log('Error');
                         return;
                     }
-                    console.log(params + ' added to departments');
+                    console.log(params + ' was added to departments!');
                     promptUser();
                 })
             })
@@ -78,7 +78,7 @@ const promptUser = () => {
                             console.log(err);
                             return;
                         }
-                        console.log(roleResponse.title + ' added to roles!');
+                        console.log(roleResponse.title + '  was added to roles!');
                         promptUser();
                     })
                 })
@@ -135,9 +135,42 @@ const promptUser = () => {
                         }
                     })
                 });
-            });
+            })
+        } else if (option.options === 'Update an employee role') {
+            const sql = `SELECT first_name, last_name FROM employees`;
+            db.query(sql, (err, rows) => {
+                if (err) {
+                    console.log(err);
+                    return;
+                }
+                const employeesList = rows.map(textRow => textRow.first_name + ' ' + textRow.last_name);
+                const sql2 = `SELECT title FROM roles`;
+                db.query(sql2, (err, rows) => {
+                    if (err) {
+                        console.log(err);
+                        return;
+                    }
+                    const rolesList = rows.map(textRow => textRow.title);
+                    promptUpdate(employeesList, rolesList)
+                    .then((updatedRole) => {
+                        const sql = `UPDATE employees SET role_id = (SELECT id FROM roles WHERE title=?) WHERE first_name=? and last_name=?`;
+                        const params = [updatedRole.roles, updatedRole.employees.split(' ')[0], updatedRole.employees.split(' ')[1]];
+                        db.query(sql, params, (err, result) => {
+                            if (err) {
+                                console.log(err);
+                                return;
+                            }
+                            console.log('Role updated!');
+                            promptUser();
+                        })
+
+                    })
+                })
+            })
+        } else {
+            return;
         }
-    });
+    })
 };
 const promptDepartment = () => {
     return inquirer.prompt ([
@@ -228,6 +261,22 @@ const promptEmployee = (rolesList, employeesList) => {
             name: 'manager',
             message: "Who is the employee's manager?",
             choices: employeesList
+        }
+    ])
+};
+const promptUpdate = (employeesList, rolesList) => {
+    return inquirer.prompt([
+        {
+            type: 'list',
+            name: 'employees',
+            message: "Which employee's role you want to update?",
+            choices: employeesList
+        },
+        {
+            type: 'list',
+            name: 'roles',
+            message: "Which role would you like to set as a new role for selected employee?",
+            choices: rolesList
         }
     ])
 }
